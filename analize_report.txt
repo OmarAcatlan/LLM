@@ -1,0 +1,84 @@
+# Reporte de Análisis: Dataset Línea Mujeres CDMX (Versión Actualizada)
+
+Este documento resume los hallazgos clave del análisis de datos del conjunto "Línea Mujeres CDMX", reflejando las últimas mejoras y correcciones implementadas en el notebook de Python.
+
+## 1. Resumen de Hallazgos e Identificación de Problemáticas
+
+### Perfil General y Calidad de Datos
+- **Volumen y Calidad**: El dataset es robusto. La limpieza incluyó la eliminación de duplicados y el filtrado de edades fuera del rango de 18 a 99 años.
+- **Problemática - Datos Geográficos**: Persiste una alta cantidad de valores nulos en `municipio_hechos`, lo que fue manejado en el análisis pero indica una oportunidad de mejora en la captura de datos para análisis geoespaciales más precisos.
+
+### Análisis de la Variable `edad`
+- **Perfil de Edad**: La edad de las usuarias no sigue una distribución normal, con una concentración en el rango de 30 a 50 años.
+- **Investigación (40-50 años)**: Un análisis detallado del rango de 40 a 50 años confirmó que existen datos consistentes para todas las edades en este intervalo, descartando la existencia de "huecos" en los datos.
+
+### Tendencias Temporales (Corregido)
+- **Comportamiento Mensual**: El análisis corregido muestra una línea de tiempo continua del volumen de llamadas, revelando picos estacionales o relacionados con eventos específicos que ahora se pueden identificar con mayor claridad.
+- **Comportamiento Diario y por Hora**: Tras corregir las anomalías, se observa que el **lunes es el día de mayor volumen de llamadas**, con una disminución progresiva durante la semana. Por horas, la mayor concentración de llamadas ocurre en las **horas de la tarde (12:00 a 18:00 hrs)**.
+- **Problemática - Asignación de Recursos**: Estos patrones claros permiten una mejor planificación. Se podrían reforzar los turnos de atención los lunes y durante las tardes para satisfacer la demanda. Las campañas de difusión podrían ser más efectivas si se lanzan a finales de la semana, cuando la línea está menos saturada.
+
+### Distribución Geoespacial
+- **Concentración de Llamadas**: Las alcaldías **Iztapalapa**, **Gustavo A. Madero** y **Cuauhtémoc** siguen siendo las que concentran el mayor número de llamadas.
+- **Problemática - Focos de Atención**: La alta incidencia en estas áreas las marca como zonas prioritarias para programas de prevención, intervención y difusión de los servicios de la línea.
+
+### Tipos de Violencia (Análisis Enfocado)
+- **Prevalencia**: El análisis se centró en 5 tipos de violencia clave. La **violencia Familiar** y la **Psicológica** son, con diferencia, las más reportadas. La violencia Física, Sexual y las Amenazas, aunque menos frecuentes, representan casos de alta severidad.
+- **Problemática - Naturaleza de la Violencia**: La prevalencia de la violencia familiar y psicológica sugiere que el conflicto a menudo ocurre en el ámbito doméstico y no siempre deja evidencia física. Esto subraya la necesidad de servicios especializados en terapia familiar, manejo de conflictos y salud mental.
+
+### Segmentación Clave
+- **Edad y Tipo de Violencia**: Los nuevos rangos de edad muestran que la violencia **Sexual** tiene una proporción ligeramente mayor en el grupo más joven (18-20 años), mientras que la violencia **Familiar** y **Psicológica** son predominantes en todos los grupos de edad.
+- **Problemática - Estrategias Diferenciadas**: Las intervenciones deben adaptarse. Para las más jóvenes, son cruciales las campañas de prevención sobre violencia sexual y de pareja. Para los grupos de mayor edad, los servicios deben enfocarse en el manejo de conflictos familiares crónicos y el desgaste emocional.
+
+### Matriz de Correlación
+- **Interpretación**: La matriz muestra correlaciones generalmente débiles entre los diferentes tipos de violencia, lo que indica que, aunque pueden co-ocurrir, a menudo se reportan como problemáticas distintas. No se identificaron correlaciones extremadamente fuertes que sugieran que dos tipos de violencia casi siempre ocurren juntos.
+
+## 2. Código SAS Equivalente
+
+(Los códigos SAS se mantienen como referencia conceptual del tipo de análisis realizado).
+
+### Análisis de Normalidad (Edad)
+```sas
+PROC UNIVARIATE DATA=work.linea_limpio NORMAL PLOT;
+    VAR edad;
+RUN;
+```
+
+### Análisis Temporal
+```sas
+/* Para un gráfico de serie de tiempo mensual */
+PROC SGPLOT DATA=work.llamadas_por_mes;
+    SERIES X=mes_año Y=conteo_llamadas / MARKERS;
+RUN;
+```
+
+### Análisis Geoespacial (Mapa)
+```sas
+/* Concepto de mapa de coropletas en SAS */
+PROC GMAP DATA=work.llamadas_por_municipio MAP=maps.cdmx_alcaldias;
+    ID municipio_id;
+    CHORO conteo_llamadas / COUTLINE=BLACK;
+RUN;
+```
+
+### Frecuencia de Tipos de Violencia
+```sas
+/* Frecuencia de los tipos de violencia enfocados */
+PROC FREQ DATA=work.linea_enfocada;
+    TABLES tipo_violencia;
+RUN;
+```
+
+### Segmentación (Violencia vs. Edad)
+```sas
+/* Tabla de contingencia */
+PROC FREQ DATA=work.linea_enfocada;
+    TABLES rango_edad*tipo_violencia / NOCOL NOROW;
+RUN;
+```
+
+### Matriz de Correlación
+```sas
+PROC CORR DATA=work.linea_con_flags;
+    VAR violencia_familiar violencia_psicologica violencia_sexual violencia_fisica violencia_amenazas;
+RUN;
+```
